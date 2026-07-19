@@ -1,4 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import '../data/mock/mock_family_repository.dart';
 import '../data/repositories/family_repository.dart';
 import '../models/family.dart';
@@ -14,3 +15,6 @@ final schemaProvider = StreamProvider.family<FieldSchema?, String>((ref, id) => 
 final membersProvider = StreamProvider.family<List<FamilyMember>, String>((ref, id) => ref.watch(repositoryProvider).watchMembers(id));
 final invitesProvider = StreamProvider.family<List<String>, String>((ref, id) => ref.watch(repositoryProvider).watchPendingInvites(id));
 Future<MockFamilyRepository> buildRepository() async { final r = MockFamilyRepository(); await r.init(); return r; }
+
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+

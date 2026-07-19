@@ -1,0 +1,24 @@
+# api-smart-tester
+
+### sql
+-- 1. Create a new user with a secure password
+CREATE USER family_tree_app_user WITH ENCRYPTED PASSWORD 'family_tree';
+
+-- 2. Create the database and assign the new user as the owner
+CREATE DATABASE family_tree_app_db WITH OWNER family_tree_app_user;
+
+Create the DDL, DML flyway script inside "src\main\resources\db\migration" folder. Keep the sample insert scripts separately.
+
+Add below in the init script on the top - 
+-- 1. Create the custom schema
+CREATE SCHEMA IF NOT EXISTS family_tree;
+
+-- 2. Revoke public modification access to the default public schema (Security Best Practice)
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+
+-- 3. Grant permissions to your user for the new schema
+GRANT USAGE, CREATE ON SCHEMA family_tree TO family_tree_app_user;
+
+-- 4. (Optional) Set the schema as the default search path for this user
+ALTER USER family_tree_app_user SET search_path TO family_tree, public;
+

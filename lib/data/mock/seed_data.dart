@@ -13,9 +13,13 @@ String colorHex(int value) => '#${value.toRadixString(16).padLeft(8, '0').substr
 List<FieldDefinition> defaultFields() => const [
   FieldDefinition(key: 'photo', label: 'Photo', type: 'image', isDefault: true),
   FieldDefinition(key: 'firstName', label: 'First Name', type: 'text', mandatory: true, isDefault: true),
-  FieldDefinition(key: 'lastName', label: 'Last Name', type: 'text', isDefault: true),
+  FieldDefinition(key: 'lastName', label: 'Last Name', type: 'text', mandatory: true, isDefault: true),
+  FieldDefinition(key: 'nickName', label: 'Nick Name', type: 'text', isDefault: true),
   FieldDefinition(key: 'dob', label: 'Date of Birth', type: 'date', isDefault: true),
+  FieldDefinition(key: 'age', label: 'Age', type: 'number', isDefault: true),
   FieldDefinition(key: 'gender', label: 'Gender', type: 'enum', isDefault: true, options: ['male', 'female', 'other']),
+  FieldDefinition(key: 'maidenFirstName', label: 'Maternal First Name', type: 'text', isDefault: true),
+  FieldDefinition(key: 'maidenLastName', label: 'Maternal Last Name', type: 'text', isDefault: true),
   FieldDefinition(key: 'fatherFirstName', label: 'Father First Name', type: 'text', isDefault: true),
   FieldDefinition(key: 'fatherLastName', label: 'Father Last Name', type: 'text', isDefault: true),
   FieldDefinition(key: 'motherFirstName', label: 'Mother First Name', type: 'text', isDefault: true),
@@ -31,7 +35,7 @@ Map<String, dynamic> seedStore() {
   final settings = FamilySettings(photoShape: DesignTokens.defaultPhotoShape, genderColors: DesignTokens.genderBorderColors.map((k, v) => MapEntry(k, colorHex(v.value))));
   final family = Family(id: familyId, name: 'The Riveras', createdBy: mockUserId, memberUserIds: const [mockUserId, mockEditorId, mockViewerId], roles: const {mockUserId: 'owner', mockEditorId: 'editor', mockViewerId: 'viewer'}, settings: settings, fieldSchemaId: schemaId);
   final ids = List.generate(9, (_) => uuid.v4());
-  FamilyMember m(int i, String f, String l, String g, String dob, {String? dod, String? father, String? mother, List<String> spouses = const [], List<String> children = const []}) => FamilyMember(id: ids[i], familyId: familyId, schemaVersion: 1, data: {'photo': 'https://i.pravatar.cc/300?u=${ids[i]}', 'firstName': f, 'lastName': l, 'gender': g, 'dob': dob, if (dod != null) 'dod': dod, 'profession': 'Community builder', 'mobile': '+1 555 010${i + 1}'}, relations: MemberRelations(fatherId: father, motherId: mother, spouseIds: spouses, childrenIds: children), createdBy: mockUserId, lastEditedBy: mockUserId, createdAt: now, updatedAt: now);
+  FamilyMember m(int i, String f, String l, String g, String dob, {String? dod, String? father, String? mother, List<String> spouses = const [], List<String> children = const []}) => FamilyMember(id: ids[i], familyId: familyId, schemaVersion: 1, data: {'firstName': f, 'lastName': l, 'gender': g, 'dob': dob, if (dod != null) 'dod': dod, 'profession': 'Community builder', 'mobile': '+1 555 010${i + 1}'}, relations: MemberRelations(fatherId: father, motherId: mother, spouseIds: spouses, childrenIds: children), createdBy: mockUserId, lastEditedBy: mockUserId, createdAt: now, updatedAt: now);
   final members = [
     m(0, 'George', 'Rivera', 'male', '1940-04-12', dod: '2018-09-01', spouses: [ids[1]], children: [ids[2], ids[3]]), m(1, 'Elena', 'Rivera', 'female', '1944-07-03', spouses: [ids[0]], children: [ids[2], ids[3]]),
     m(2, 'Marco', 'Rivera', 'male', '1968-02-11', father: ids[0], mother: ids[1], spouses: [ids[4]], children: [ids[5], ids[6]]), m(3, 'Sofia', 'Patel', 'female', '1971-10-22', father: ids[0], mother: ids[1]),

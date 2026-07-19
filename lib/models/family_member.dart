@@ -1,12 +1,22 @@
+class CustomLink {
+  final String targetId;
+  final String label;
+  final bool isDotted;
+  const CustomLink({required this.targetId, required this.label, this.isDotted = false});
+  factory CustomLink.fromJson(Map<String, dynamic> json) => CustomLink(targetId: json['targetId'], label: json['label'], isDotted: json['isDotted'] ?? false);
+  Map<String, dynamic> toJson() => {'targetId': targetId, 'label': label, 'isDotted': isDotted};
+}
+
 class MemberRelations {
   final String? fatherId;
   final String? motherId;
   final List<String> spouseIds;
   final List<String> childrenIds;
-  const MemberRelations({this.fatherId, this.motherId, this.spouseIds = const [], this.childrenIds = const []});
-  factory MemberRelations.fromJson(Map<String, dynamic> json) => MemberRelations(fatherId: json['fatherId'], motherId: json['motherId'], spouseIds: List<String>.from(json['spouseIds'] ?? const []), childrenIds: List<String>.from(json['childrenIds'] ?? const []));
-  Map<String, dynamic> toJson() => {'fatherId': fatherId, 'motherId': motherId, 'spouseIds': spouseIds, 'childrenIds': childrenIds};
-  MemberRelations copyWith({String? fatherId, String? motherId, List<String>? spouseIds, List<String>? childrenIds}) => MemberRelations(fatherId: fatherId ?? this.fatherId, motherId: motherId ?? this.motherId, spouseIds: spouseIds ?? this.spouseIds, childrenIds: childrenIds ?? this.childrenIds);
+  final List<CustomLink> customLinks;
+  const MemberRelations({this.fatherId, this.motherId, this.spouseIds = const [], this.childrenIds = const [], this.customLinks = const []});
+  factory MemberRelations.fromJson(Map<String, dynamic> json) => MemberRelations(fatherId: json['fatherId'], motherId: json['motherId'], spouseIds: List<String>.from(json['spouseIds'] ?? const []), childrenIds: List<String>.from(json['childrenIds'] ?? const []), customLinks: (json['customLinks'] as List<dynamic>? ?? []).map((e) => CustomLink.fromJson(Map<String, dynamic>.from(e))).toList());
+  Map<String, dynamic> toJson() => {'fatherId': fatherId, 'motherId': motherId, 'spouseIds': spouseIds, 'childrenIds': childrenIds, 'customLinks': customLinks.map((e) => e.toJson()).toList()};
+  MemberRelations copyWith({String? fatherId, String? motherId, List<String>? spouseIds, List<String>? childrenIds, List<CustomLink>? customLinks}) => MemberRelations(fatherId: fatherId ?? this.fatherId, motherId: motherId ?? this.motherId, spouseIds: spouseIds ?? this.spouseIds, childrenIds: childrenIds ?? this.childrenIds, customLinks: customLinks ?? this.customLinks);
 }
 class FamilyMember {
   final String id;
