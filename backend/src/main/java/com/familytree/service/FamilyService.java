@@ -76,6 +76,20 @@ public class FamilyService {
         return family;
     }
 
+    @Transactional
+    public void deleteFamily(String familyId, String userId) {
+        FamilyEntity family = familyRepository.findById(familyId)
+                .orElseThrow(() -> new NoSuchElementException("Family not found: " + familyId));
+        
+        String role = family.getRoles().get(userId);
+        if (!"owner".equals(role)) {
+            throw new RuntimeException("Only owner can delete family");
+        }
+        
+        familyRepository.deleteById(familyId);
+        auditService.log(familyId, userId, "FAMILY_DELETED", "family", familyId, Map.of("name", family.getName()), null);
+    }
+
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> loadTemplateFields() {
         try {

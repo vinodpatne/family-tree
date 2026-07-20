@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../models/family_member.dart';
 import '../../models/field_definition.dart';
 import '../../state/providers.dart';
+import '../../utils/persona_helper.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../widgets/dynamic_field_input.dart';
+import '../tree/widgets/member_avatar.dart';
 
 class MemberEditFormScreen extends ConsumerStatefulWidget {
   const MemberEditFormScreen({
@@ -36,6 +40,27 @@ class _S extends ConsumerState<MemberEditFormScreen> {
   final ctrls = <String, TextEditingController>{};
   String? father, mother;
   String _lastAutoPopulatedLastName = '';
+  bool _isDirty = false;
+
+  Future<bool> _onWillPop() async {
+    if (!_isDirty) return true;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Discard Changes?'),
+        content: const Text('Do you wish to discard the changes you made?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('No')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+    return confirm == true;
+  }
 
   @override
   void initState() {
@@ -44,24 +69,28 @@ class _S extends ConsumerState<MemberEditFormScreen> {
     mother = widget.initialMotherId;
   }
 
-  void _onLastNameChanged() {
-    final currentLastName = ctrls['lastName']?.text ?? '';
+  void _updateParentLastNames() {
+    final gender = ctrls['gender']?.text.toLowerCase() ?? '';
+    final sourceLastName = gender == 'female'
+        ? (ctrls['maidenLastName']?.text ?? '')
+        : (ctrls['lastName']?.text ?? '');
+
     final fatherCtrl = ctrls['fatherLastName'];
     final motherCtrl = ctrls['motherLastName'];
 
     if (fatherCtrl != null) {
       if (fatherCtrl.text.isEmpty ||
           fatherCtrl.text == _lastAutoPopulatedLastName) {
-        fatherCtrl.text = currentLastName;
+        fatherCtrl.text = sourceLastName;
       }
     }
     if (motherCtrl != null) {
       if (motherCtrl.text.isEmpty ||
           motherCtrl.text == _lastAutoPopulatedLastName) {
-        motherCtrl.text = currentLastName;
+        motherCtrl.text = sourceLastName;
       }
     }
-    _lastAutoPopulatedLastName = currentLastName;
+    _lastAutoPopulatedLastName = sourceLastName;
   }
 
   void _calculateAge() {
@@ -232,9 +261,16 @@ class _S extends ConsumerState<MemberEditFormScreen> {
       if (!ctrls.containsKey(f.key)) {
         final ctrl = TextEditingController(
             text: existing?.data[f.key]?.toString() ?? '');
+        ctrl.addListener(() => _isDirty = true);
         if (f.key == 'dob') ctrl.addListener(_calculateAge);
-        if (f.key == 'gender') ctrl.addListener(() => setState(() {}));
-        if (f.key == 'lastName') ctrl.addListener(_onLastNameChanged);
+        if (f.key == 'gender') {
+          ctrl.addListener(() {
+            setState(() {});
+            _updateParentLastNames();
+          });
+        }
+        if (f.key == 'lastName') ctrl.addListener(_updateParentLastNames);
+        if (f.key == 'maidenLastName') ctrl.addListener(_updateParentLastNames);
         ctrls[f.key] = ctrl;
       }
     }
@@ -291,14 +327,20 @@ class _S extends ConsumerState<MemberEditFormScreen> {
         }
       }
 
-      // Default auto-populate father & mother last name if member last name is present
-      if (ctrls['lastName']!.text.isNotEmpty) {
-        if (ctrls['fatherLastName']!.text.isEmpty) {
-          ctrls['fatherLastName']!.text = ctrls['lastName']!.text;
+      // Default auto-populate father & mother last name
+      final gender = ctrls['gender']?.text.toLowerCase();
+      final sourceLastName = gender == 'female'
+          ? (ctrls['maidenLastName']?.text ?? '')
+          : (ctrls['lastName']?.text ?? '');
+
+      if (sourceLastName.isNotEmpty) {
+        if (ctrls['fatherLastName']?.text.isEmpty ?? false) {
+          ctrls['fatherLastName']!.text = sourceLastName;
         }
-        if (ctrls['motherLastName']!.text.isEmpty) {
-          ctrls['motherLastName']!.text = ctrls['lastName']!.text;
+        if (ctrls['motherLastName']?.text.isEmpty ?? false) {
+          ctrls['motherLastName']!.text = sourceLastName;
         }
+        _lastAutoPopulatedLastName = sourceLastName;
       }
     }
 
@@ -373,7 +415,15 @@ class _S extends ConsumerState<MemberEditFormScreen> {
           'motherLastName'
         ].contains(f.key));
 
-    return AppScaffold(
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (await _onWillPop()) {
+           if (context.mounted) context.go('/family/${widget.familyId}/tree');
+        }
+      },
+      child: AppScaffold(
       title: existing == null
           ? 'Add New Member'
           : 'Edit Member: ${existing.data['firstName'] ?? ''}',
@@ -384,9 +434,49 @@ class _S extends ConsumerState<MemberEditFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'Go back',
+                  onPressed: () async {
+                    if (await _onWillPop()) {
+                      if (context.mounted) context.go('/family/${widget.familyId}/tree');
+                    }
+                  },
+                ),
+                if (existing != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: 'Delete member',
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (c) => AlertDialog(
+                          title: const Text('Delete Member'),
+                          content: const Text('Are you sure you want to delete this member?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+                            FilledButton(
+                              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                              onPressed: () => Navigator.pop(c, true),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await ref.read(repositoryProvider).deleteMember(existing.id);
+                        if (context.mounted) context.go('/family/${widget.familyId}/tree');
+                      }
+                    },
+                  ),
+              ],
+            ),
             // Page Title Header
             Padding(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(bottom: 20, top: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -411,10 +501,110 @@ class _S extends ConsumerState<MemberEditFormScreen> {
               ),
             ),
             Center(
-              child: DynamicFieldInput(
-                field: photoField,
-                controller: ctrls[photoField.key]!,
-                allControllers: ctrls,
+              child: AnimatedBuilder(
+                animation: Listenable.merge(ctrls.values),
+                builder: (context, child) {
+                  final dummyMember = FamilyMember(
+                    id: existing?.id ?? '',
+                    familyId: widget.familyId,
+                    schemaVersion: schema.version,
+                    data: {
+                      for (final k in ctrls.keys) k: ctrls[k]!.text
+                    },
+                    relations: const MemberRelations(),
+                    createdBy: '',
+                    lastEditedBy: '',
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  );
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) => SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.photo_library),
+                                title: const Text('Upload Photo'),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  final picker = ImagePicker();
+                                  final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                                  if (image != null) {
+                                    final bytes = await image.readAsBytes();
+                                    final base64String = base64Encode(bytes);
+                                    final mimeType = image.mimeType ?? 'image/jpeg';
+                                    ctrls['photo']!.text = 'data:$mimeType;base64,$base64String';
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.face),
+                                title: const Text('Choose Avatar Icon'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  final gender = ctrls['gender']?.text ?? 'male';
+                                  final age = ctrls['age']?.text ?? '30';
+                                  final personas = PersonaHelper.getAvailablePersonas(gender, age);
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Select Avatar'),
+                                      content: SizedBox(
+                                        width: double.maxFinite,
+                                        child: GridView.builder(
+                                          shrinkWrap: true,
+                                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                            maxCrossAxisExtent: 48,
+                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 12,
+                                          ),
+                                          itemCount: personas.length,
+                                          itemBuilder: (context, index) {
+                                            return InkWell(
+                                              onTap: () {
+                                                ctrls['photo']!.text = personas[index];
+                                                Navigator.pop(context);
+                                              },
+                                              child: Image.network(personas[index], fit: BoxFit.contain),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        MemberAvatar(member: dummyMember, settings: fam.settings, size: 100),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                            ),
+                            child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             if (existing != null) ...[
@@ -620,7 +810,7 @@ class _S extends ConsumerState<MemberEditFormScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

@@ -51,4 +51,10 @@ public class FamilyController {
         FamilyEntity updated = familyService.updateSettings(familyId, settings, user.getId());
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/{familyId}")
+    public ResponseEntity<Void> deleteFamily(@PathVariable String familyId, @AuthenticationPrincipal UserEntity user) {
+        familyService.deleteFamily(familyId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
 }

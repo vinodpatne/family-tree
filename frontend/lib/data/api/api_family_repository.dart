@@ -202,6 +202,19 @@ class ApiFamilyRepository implements FamilyRepository {
   }
 
   @override
+  Future<void> deleteFamily(String familyId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/families/$familyId'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      _notify();
+    } else {
+      throw Exception('Failed to delete family: ${response.body}');
+    }
+  }
+
+  @override
   Stream<FieldSchema?> watchSchema(String familyId) async* {
     yield await _fetchSchema(familyId);
     yield* _tick.stream.asyncMap((_) => _fetchSchema(familyId));
@@ -298,6 +311,19 @@ class ApiFamilyRepository implements FamilyRepository {
     } else {
       throw Exception('Failed to save member: ${response.body}');
     }
+  }
+
+  @override
+  Future<void> importMembers(String familyId, List<Map<String, dynamic>> membersBatch) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/families/$familyId/members/batch'),
+      headers: _headers,
+      body: jsonEncode(membersBatch),
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to import members: ${response.body}');
+    }
+    _notify();
   }
 
   @override

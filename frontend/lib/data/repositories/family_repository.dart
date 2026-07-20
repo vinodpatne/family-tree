@@ -25,4 +25,6 @@ abstract class FamilyRepository {
   Future<void> saveMedia(MediaRef media);
   Stream<List<String>> watchPendingInvites(String familyId);
   Future<void> inviteCollaborator(String familyId, String email);
+  Future<void> deleteFamily(String familyId);
+  Future<void> importMembers(String familyId, List<Map<String, dynamic>> membersBatch);
 }

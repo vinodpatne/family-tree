@@ -169,10 +169,24 @@ class _DynamicFieldInputState extends State<DynamicFieldInput> {
             Expanded(
               child: Text(field.label, style: theme.textTheme.titleMedium),
             ),
-            ValueListenableBuilder<TextEditingValue>(
-              valueListenable: controller,
-              builder: (context, value, child) {
-                final hasImage = value.text.isNotEmpty;
+            AnimatedBuilder(
+              animation: Listenable.merge([
+                controller,
+                if (widget.allControllers?.containsKey('gender') == true) widget.allControllers!['gender']!,
+                if (widget.allControllers?.containsKey('age') == true) widget.allControllers!['age']!,
+                if (widget.allControllers?.containsKey('profession') == true) widget.allControllers!['profession']!,
+              ]),
+              builder: (context, child) {
+                final hasUploadedImage = controller.text.isNotEmpty && !controller.text.contains('/personas/');
+                
+                String displayUrl = controller.text;
+                if (!hasUploadedImage) {
+                  final gender = widget.allControllers?['gender']?.text ?? 'male';
+                  final age = widget.allControllers?['age']?.text ?? '30';
+                  final profession = widget.allControllers?['profession']?.text ?? 'developer';
+                  displayUrl = PersonaHelper.getDynamicPersonaUrl(gender, age, profession);
+                }
+
                 return GestureDetector(
                   onTap: () {
                     showModalBottomSheet(
@@ -265,11 +279,9 @@ class _DynamicFieldInputState extends State<DynamicFieldInput> {
                     ),
                     child: CircleAvatar(
                       radius: 40,
-                      backgroundColor:
-                          theme.colorScheme.surfaceContainerHighest,
-                      backgroundImage:
-                          hasImage ? NetworkImage(value.text) : null,
-                      child: hasImage
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      backgroundImage: displayUrl.isNotEmpty ? NetworkImage(displayUrl) : null,
+                      child: displayUrl.isNotEmpty
                           ? null
                           : const Icon(Icons.add_a_photo, size: 28),
                     ),

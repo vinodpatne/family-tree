@@ -77,4 +77,31 @@ class PersonaHelper {
     final professions = _availablePersonas[key] ?? [];
     return professions.map((p) => '/personas/$gender/$ageGroup/$gender-$ageGroup-$p.png').toList();
   }
+
+  static String getDynamicPersonaUrl(String genderStr, String ageStr, String professionStr) {
+    String gender = genderStr.toLowerCase();
+    if (gender != 'male' && gender != 'female') gender = 'male';
+
+    String ageGroup = 'adult';
+    int age = int.tryParse(ageStr) ?? 30;
+    if (age < 13) {
+      ageGroup = 'child';
+    } else if (age < 20) {
+      ageGroup = 'teen';
+    } else if (age >= 60) {
+      ageGroup = 'senior';
+    }
+
+    String profession = professionStr.toLowerCase().replaceAll(RegExp(r'\s+'), '-');
+    if (profession.isEmpty) profession = 'developer';
+
+    final key = '$gender-$ageGroup';
+    final validProfessions = _availablePersonas[key] ?? [];
+
+    if (!validProfessions.contains(profession)) {
+      profession = validProfessions.isNotEmpty ? validProfessions.first : 'developer';
+    }
+
+    return '/personas/$gender/$ageGroup/$gender-$ageGroup-$profession.png';
+  }
 }

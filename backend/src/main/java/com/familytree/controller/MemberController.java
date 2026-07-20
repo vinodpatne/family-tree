@@ -38,6 +38,15 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(member);
     }
 
+    @PostMapping("/api/families/{familyId}/members/batch")
+    public ResponseEntity<Void> importMembers(
+            @PathVariable String familyId,
+            @RequestBody List<Map<String, Object>> membersBatch,
+            @AuthenticationPrincipal UserEntity user) {
+        memberService.importMembersBatch(familyId, membersBatch, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/api/members/{memberId}")
     public ResponseEntity<FamilyMemberEntity> updateMember(
             @PathVariable String memberId,

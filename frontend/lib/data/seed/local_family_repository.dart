@@ -36,4 +36,26 @@ class LocalFamilyRepository implements FamilyRepository {
   @override Future<void> saveMedia(MediaRef media) async {}
   @override Stream<List<String>> watchPendingInvites(String familyId) async* { yield []; }
   @override Future<void> inviteCollaborator(String familyId, String email) async {}
+  @override Future<void> deleteFamily(String familyId) async {
+    final m = Map.of(_read<Map>('families', {}));
+    m.remove(familyId);
+    await _box.put('families', m);
+    _notify();
+  }
+  @override Future<void> importMembers(String familyId, List<Map<String, dynamic>> membersBatch) async {
+    final m = Map.of(_read<Map>('members', {}));
+    for (final member in membersBatch) {
+      final id = member['id'] as String? ?? _uuid.v4();
+      final fm = FamilyMember(
+        id: id,
+        familyId: familyId,
+        schemaVersion: 1,
+        data: member['data'] ?? {},
+        relations: FamilyMemberRelations.fromJson(member['relations'] ?? {}),
+      );
+      m[id] = fm.toJson();
+    }
+    await _box.put('members', m);
+    _notify();
+  }
 }

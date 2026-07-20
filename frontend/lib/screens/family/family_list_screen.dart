@@ -110,7 +110,41 @@ class _FamilyListScreenState extends ConsumerState<FamilyListScreen> {
                         ),
                         title: Text(f.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text('${f.memberUserIds.length} collaborators'),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('Delete Family'),
+                                    content: Text('Are you sure you want to delete ${f.name}? This action cannot be undone.'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  try {
+                                    await ref.read(repositoryProvider).deleteFamily(f.id);
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
+                                    }
+                                  }
+                                }
+                              },
+                            ),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
                         onTap: () => context.go('/family/${f.id}/tree'),
                       ),
                     ),
