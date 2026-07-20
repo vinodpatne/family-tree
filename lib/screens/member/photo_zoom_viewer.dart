@@ -1,2 +1,0 @@
-import 'package:flutter/material.dart'; import 'package:photo_view/photo_view.dart';
-class PhotoZoomViewer extends StatelessWidget{ const PhotoZoomViewer({super.key,required this.imageUrl}); final String imageUrl; @override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.black, appBar:AppBar(backgroundColor:Colors.black, foregroundColor:Colors.white), body:GestureDetector(onVerticalDragEnd:(_)=>Navigator.pop(context), child:PhotoView(imageProvider:NetworkImage(imageUrl), heroAttributes:PhotoViewHeroAttributes(tag:imageUrl))));}

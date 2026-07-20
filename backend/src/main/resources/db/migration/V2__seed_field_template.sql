@@ -1,0 +1,36 @@
+-- Seed the global field definition template
+INSERT INTO family_tree.field_definition_templates (id, version, fields) VALUES (
+    'default-template-v1',
+    1,
+    '[
+        {"key":"photo","label":"Photo","type":"image","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"firstName","label":"First Name","type":"text","mandatory":true,"isDefault":true,"sensitive":false},
+        {"key":"lastName","label":"Last Name","type":"text","mandatory":true,"isDefault":true,"sensitive":false},
+        {"key":"nickName","label":"Nick Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"dob","label":"Date of Birth","type":"date","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"age","label":"Age","type":"number","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"gender","label":"Gender","type":"enum","mandatory":false,"isDefault":true,"sensitive":false,"options":["male","female","other"]},
+        {"key":"maidenFirstName","label":"Maiden First Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"maidenLastName","label":"Maiden Last Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"fatherFirstName","label":"Father First Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"fatherLastName","label":"Father Last Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"motherFirstName","label":"Mother First Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"motherLastName","label":"Mother Last Name","type":"text","mandatory":false,"isDefault":true,"sensitive":false},
+        {"key":"email","label":"Email","type":"email","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"profession","label":"Profession","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"placeOfBirth","label":"Place of Birth","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"timeOfBirth","label":"Time of Birth","type":"time","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"hobby","label":"Hobby","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"dod","label":"Date of Death","type":"date","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"netWorth","label":"Net Worth","type":"number","mandatory":false,"isDefault":false,"sensitive":true},
+        {"key":"residenceArea","label":"Residence Area","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"residenceAddress","label":"Residence Address","type":"textarea","mandatory":false,"isDefault":false,"sensitive":true},
+        {"key":"mobile","label":"Mobile","type":"phone","mandatory":false,"isDefault":false,"sensitive":true},
+        {"key":"caste","label":"Caste","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"religion","label":"Religion","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"gotra","label":"Gotra","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"naadi","label":"Naadi","type":"text","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"height","label":"Height (cm)","type":"number","mandatory":false,"isDefault":false,"sensitive":false},
+        {"key":"weight","label":"Weight (kg)","type":"number","mandatory":false,"isDefault":false,"sensitive":false}
+    ]'::jsonb
+);

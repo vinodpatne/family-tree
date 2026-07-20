@@ -1,0 +1,14 @@
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/icudtl.dat
+E:/src-github/family-tree/build/windows/x64/runner/Debug/flutter_windows.dll
+E:/src-github/family-tree/build/windows/x64/runner/Debug/file_selector_windows_plugin.dll
+E:/src-github/family-tree/build/windows/x64/runner/Debug/dartjni.dll
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin.json
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/FontManifest.json
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/kernel_blob.bin
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/NativeAssetsManifest.json
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/NOTICES
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/NOTICES.Z
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/shaders/ink_sparkle.frag
+E:/src-github/family-tree/build/windows/x64/runner/Debug/data/flutter_assets/shaders/stretch_effect.frag
